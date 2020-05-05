@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -45,8 +48,10 @@ public class SellerDaoJDBC implements SellerDao {
 
 		try {
 			st = conn.prepareStatement(
-					"SELECT seller.*,department.Name as DepName " + "FROM seller INNER JOIN department "
-							+ "ON seller.DepartmentId = department.Id " + "WHERE seller.Id = ? ");
+					"SELECT seller.*,department.Name as DepName " 
+					+ "FROM seller INNER JOIN department "
+					+ "ON seller.DepartmentId = department.Id " 
+					+ "WHERE seller.Id = ? ");
 
 			st.setInt(1, id);
 			rs = st.executeQuery(); // armazena as alterações feitas pela lógica no rs.
@@ -95,6 +100,52 @@ public class SellerDaoJDBC implements SellerDao {
 	public List<Seller> findAll() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public List<Seller> findByDepartment(Department department) {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+
+		try {
+			st = conn.prepareStatement(
+					"SELECT seller.*,department.Name as DepName "
+					+ "FROM seller INNER JOIN department "
+					+ "ON seller.DepartmentId = department.Id "
+					+ "WHERE DepartmentId = ? "
+					+ "ORDER BY Name ");
+
+			st.setInt(1, department.getId());
+			rs = st.executeQuery(); // armazena as alterações feitas pela lógica no rs.
+
+			List <Seller> list = new ArrayList<>();
+			Map <Integer, Department> map = new HashMap<>();
+			
+			while (rs.next()) { // enquanto houver o próximo para ser lido.
+				
+				Department dep = map.get(rs.getInt("DepartmentId"));
+				
+				if (dep == null) {
+					dep = instantiateDepartment(rs);
+					map.put(rs.getInt("DepartmentId"),dep);
+					
+				}
+				
+				Seller obj = instantiateSeller(rs, dep);
+				list.add(obj);
+			}
+			return list;
+
+
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+
+		} finally { // nao é necessario encerrar a conexao, pois podemos querer utilzar essa classe
+					// em situaçoes futuras.
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+
+		}
+		
 	}
 
 }

@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-public class DB {
+public class DB { // classe responsável por estabelecer a conexão com o banco de dados.
 
 	private static Connection conn = null;
 	
@@ -37,7 +37,7 @@ public class DB {
 		}
 	}
 	
-	private static Properties loadProperties() {
+	private static Properties loadProperties() { // método que lê o txt com os dados do banco de dados.
 		try (FileInputStream fs = new FileInputStream("db.properties")) {
 			Properties props = new Properties();
 			props.load(fs);
